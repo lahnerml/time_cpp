@@ -100,6 +100,11 @@ int main(int argc, char **argv) {
 			return -1;
 		}
 	}
+	// verify all required options have been set
+	if (raw_start.empty()) {
+		throw std::invalid_argument("Start time must be set");
+	}
+
 	tmp_time            start_tmp = string_to_tm(raw_start);
 	std::vector<size_t> breaks;
 	for (size_t i = 0; i < raw_breaks.size(); ++i) {
