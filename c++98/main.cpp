@@ -44,8 +44,7 @@ struct tmp_time {
 		return *this;
 	}
 
-	template<typename T>
-	tmp_time &operator/(const T div) {
+	template<typename T> tmp_time &operator/(const T div) {
 		minute += minutes_per_hour * hour;
 		hour = 0;
 		minute /= div;
@@ -131,7 +130,7 @@ int main(int argc, char **argv) {
 	tmp_time start_tmp = string_to_tm(raw_start);
 	tmp_time daily_tmp;
 	if (raw_daily.empty()) {
-		daily_tmp = string_to_tm (raw_weekly);
+		daily_tmp = string_to_tm(raw_weekly);
 		daily_tmp = daily_tmp / 5;
 	} else {
 		string_to_tm(raw_daily);
@@ -149,11 +148,11 @@ int main(int argc, char **argv) {
 	start_tm->tm_sec  = 0;
 	std::time_t start = std::mktime(start_tm);
 
-	const std::time_t established      = now - start;
-	const int         todo             = daily_tmp.hour * seconds_per_hour + daily_tmp.minute * seconds_per_minute;
-	const int         nine             = 9 * seconds_per_hour;
-	const int         ten              = 10 * seconds_per_hour;
-	int               total_break_time = 0;
+	const std::time_t established = now - start;
+	const int todo = daily_tmp.hour * seconds_per_hour + daily_tmp.minute * seconds_per_minute;
+	const int nine = 9 * seconds_per_hour;
+	const int ten  = 10 * seconds_per_hour;
+	int       total_break_time = 0;
 	for (size_t i = 0; i < breaks.size(); ++i) {
 		total_break_time += breaks[i];
 	}
@@ -176,8 +175,8 @@ int main(int argc, char **argv) {
 	          << "; 7.8h: " << print_time(start + todo + break_small)
 	          << "; 9h: " << print_time(start + nine + break_large)
 	          << "; 10h: " << print_time(start + ten + break_large) << '\n';
-	std::cout << "           already done: " << print_duration(total_work_time - total_break_time) << "; "
-	          << print_duration(remaining_time) << ' ' << text_rem
+	std::cout << "           already done: " << print_duration(total_work_time - total_break_time)
+	          << "; " << print_duration(remaining_time) << ' ' << text_rem
 	          << "; no longer than: " << print_duration(max_work_time) << '\n';
 	std::cout << "           total break time: " << print_duration(total_break_time) << '\n';
 
