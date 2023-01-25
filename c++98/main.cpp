@@ -152,7 +152,8 @@ int main(int argc, char **argv) {
 
 	// Convert strings into something we can use.
 	tmp_time start_tmp = string_to_tmp_time(raw_start);
-	tmp_time daily_tmp = (raw_daily.empty()) ? (string_to_tmp_time(raw_weekly) / 5) : string_to_tmp_time(raw_daily);
+	tmp_time daily_tmp =
+	    (raw_daily.empty()) ? (string_to_tmp_time(raw_weekly) / 5) : string_to_tmp_time(raw_daily);
 	std::vector<size_t> breaks;
 	for (size_t i = 0; i < raw_breaks.size(); ++i) {
 		breaks.push_back(break_length(raw_breaks[i]));
@@ -186,6 +187,7 @@ int main(int argc, char **argv) {
 	const int   max_work_time  = start + ten + std::max(total_break_time, break_large) - now;
 	std::string text_rem       = (total_work_time > todo) ? "more" : "remaining";
 
+	// Output
 	std::cout << '[' << print_time(now) << "] start: " << print_time(start) << "; "
 	          << print_duration_as_hours(todo) << "h: " << print_time(start + todo + break_small)
 	          << "; 9h: " << print_time(start + nine + break_large)

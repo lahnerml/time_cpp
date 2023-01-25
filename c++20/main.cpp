@@ -22,7 +22,7 @@ using timepoint_t = std::chrono::time_point<std::chrono::system_clock>;
 using duration_t  = std::chrono::system_clock::duration;
 using d_hour_t    = std::chrono::duration<double, std::ratio<3600>>;
 
-/** still clunky */
+/** Convert string to timepoint */
 timepoint_t string_to_timepoint(const std::string &input) {
 	auto  tmp       = time(nullptr);
 	auto *tmpp      = std::localtime(&tmp);
@@ -35,7 +35,7 @@ timepoint_t string_to_timepoint(const std::string &input) {
 	return res;
 }
 
-/** no more constants */
+/** Convert string to duration; no more constants required */
 duration_t string_to_duration(const std::string &input) {
 	duration_t h = std::chrono::hours(std::atoi(input.substr(0, 2).c_str()));
 	duration_t m = std::chrono::minutes(std::atoi(input.substr(input.find(':') + 1, 2).c_str()));
@@ -44,7 +44,7 @@ duration_t string_to_duration(const std::string &input) {
 	return res;
 }
 
-/** straight-forward */
+/** Calculate breaklength arithmetically */
 duration_t break_length(const std::string &input) {
 	const size_t pos_dash    = input.find('-');
 	auto         break_start = string_to_duration(input.substr(0, pos_dash));
@@ -54,7 +54,7 @@ duration_t break_length(const std::string &input) {
 	return break_time;
 }
 
-/** straight forward*/
+/** Print duration in format HH:MM */
 std::string print_duration(duration_t duration) {
 	duration = abs(duration);
 
@@ -68,6 +68,7 @@ std::string print_duration(duration_t duration) {
 	return ss.str();
 }
 
+/** Print duration as floating hours */
 std::string print_duration_as_hours(duration_t duration) {
 	duration = abs(duration);
 	auto h   = d_hour_t(duration);
@@ -78,7 +79,7 @@ std::string print_duration_as_hours(duration_t duration) {
 	return ss.str();
 }
 
-/** still clunky */
+/** Print timepoint in format HH:MM */
 std::string print_time(const timepoint_t time) {
 	std::string res;
 	res.resize(9);
