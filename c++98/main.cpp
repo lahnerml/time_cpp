@@ -24,18 +24,23 @@ struct tmp_time {
 	int hour;
 	int minute;
 
+	/** Try to convert struct into a valid time expression */
 	void normalize() {
+		// If we have negative minutes and positive hours, e.g., as a result of a
+		// computation, we can "fill" the negative minutes from the hours.
 		while (minute < 0 && hour > 0) {
 			--hour;
 			minute += minutes_per_hour;
 		}
 
+		// Wrap minutes larger than 60 into an additional hour
 		if (minute > minutes_per_hour) {
 			hour += minute / minutes_per_hour;
 			minute = minute % minutes_per_hour;
 		}
 	}
 
+	// allow some arithmetic operations
 	tmp_time &operator-(const tmp_time &rhs) {
 		hour -= rhs.hour;
 		minute -= rhs.minute;
@@ -54,22 +59,25 @@ struct tmp_time {
 	}
 };
 
-tmp_time string_to_tm(const std::string &input) {
+/** Parse a string into a temporary time object */
+tmp_time string_to_tmp_time(const std::string &input) {
 	tmp_time res;
 	res.hour   = std::atoi(input.substr(0, 2).c_str());
 	res.minute = std::atoi(input.substr(input.find(':') + 1, 2).c_str());
 	return res;
 }
 
+/** Calculate length of a single break in seconds */
 size_t break_length(const std::string &input) {
 	const size_t pos_dash    = input.find('-');
-	tmp_time     break_start = string_to_tm(input.substr(0, pos_dash));
-	tmp_time     break_end   = string_to_tm(input.substr(pos_dash + 1));
+	tmp_time     break_start = string_to_tmp_time(input.substr(0, pos_dash));
+	tmp_time     break_end   = string_to_tmp_time(input.substr(pos_dash + 1));
 	tmp_time     break_time  = break_end - break_start;
 
 	return break_time.hour * seconds_per_hour + break_time.minute * seconds_per_minute;
 }
 
+/** Print duration as HH:MM */
 std::string print_duration(int duration) {
 	std::stringstream ss;
 	ss.fill('0');
@@ -81,6 +89,7 @@ std::string print_duration(int duration) {
 	return ss.str();
 }
 
+/** Print duration as floating hour value */
 std::string print_duration_as_hours(int duration) {
 	std::stringstream ss;
 	ss.fill('0');
@@ -93,6 +102,7 @@ std::string print_duration_as_hours(int duration) {
 	return ss.str();
 }
 
+/** Print time in HH:MM format */
 std::string print_time(const time_t time) {
 	std::string res;
 	res.resize(9);
@@ -103,6 +113,7 @@ std::string print_time(const time_t time) {
 }
 
 int main(int argc, char **argv) {
+	// Placeholders for parsing commandline options
 	char                     option;
 	std::vector<std::string> raw_breaks;
 	std::string              raw_start;
@@ -131,7 +142,7 @@ int main(int argc, char **argv) {
 			return -1;
 		}
 	}
-	// verify all required options have been set
+	// verify all required options have been set properly
 	if (raw_start.empty()) {
 		throw std::invalid_argument("Start time must be set");
 	}
@@ -139,19 +150,15 @@ int main(int argc, char **argv) {
 		throw std::invalid_argument("Either weekly or daily work time should be set");
 	}
 
-	tmp_time start_tmp = string_to_tm(raw_start);
-	tmp_time daily_tmp;
-	if (raw_daily.empty()) {
-		daily_tmp = string_to_tm(raw_weekly);
-		daily_tmp = daily_tmp / 5;
-	} else {
-		string_to_tm(raw_daily);
-	}
+	// Convert strings into something we can use.
+	tmp_time start_tmp = string_to_tmp_time(raw_start);
+	tmp_time daily_tmp = (raw_daily.empty()) ? (string_to_tmp_time(raw_weekly) / 5) : string_to_tmp_time(raw_daily);
 	std::vector<size_t> breaks;
 	for (size_t i = 0; i < raw_breaks.size(); ++i) {
 		breaks.push_back(break_length(raw_breaks[i]));
 	}
 
+	// Create time object for start of work
 	std::time_t now = std::time(nullptr);
 	std::tm    *start_tm;
 	start_tm          = std::localtime(&now);
@@ -160,7 +167,8 @@ int main(int argc, char **argv) {
 	start_tm->tm_sec  = 0;
 	std::time_t start = std::mktime(start_tm);
 
-	const std::time_t established = now - start;
+	// Calculate values
+	const std::time_t current = now - start;
 	const int todo = daily_tmp.hour * seconds_per_hour + daily_tmp.minute * seconds_per_minute;
 	const int nine = 9 * seconds_per_hour;
 	const int ten  = 10 * seconds_per_hour;
@@ -170,7 +178,7 @@ int main(int argc, char **argv) {
 	}
 	const int break_small     = 30 * seconds_per_minute;
 	const int break_large     = 45 * seconds_per_minute;
-	const int total_work_time = established - total_break_time;
+	const int total_work_time = current - total_break_time;
 	if (total_break_time == 0) {
 		total_break_time = (total_work_time - break_large) < nine ? break_small : break_large;
 	}

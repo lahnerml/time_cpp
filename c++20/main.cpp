@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
 	auto        now   = std::chrono::system_clock::now();
 	timepoint_t start = string_to_timepoint(raw_start);
 
-	duration_t established = now - start;
+	duration_t current = now - start;
 	duration_t todo =
 	    (raw_daily.empty()) ? (string_to_duration(raw_weekly) / 5) : string_to_duration(raw_daily);
 	duration_t nine             = std::chrono::hours(9);
@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 
 	duration_t break_small     = std::chrono::minutes(30);
 	duration_t break_large     = std::chrono::minutes(45);
-	duration_t total_work_time = established - total_break_time;
+	duration_t total_work_time = current - total_break_time;
 	if (total_break_time == duration_t::zero()) {
 		total_break_time = (total_work_time - break_large) < nine ? break_small : break_large;
 	}
