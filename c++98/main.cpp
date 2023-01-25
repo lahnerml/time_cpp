@@ -81,6 +81,18 @@ std::string print_duration(int duration) {
 	return ss.str();
 }
 
+std::string print_duration_as_hours(int duration) {
+	std::stringstream ss;
+	ss.fill('0');
+	duration       = abs(duration);
+	double hours   = duration / seconds_per_hour;
+	int    minutes = (duration % seconds_per_hour) / seconds_per_minute;
+	hours += (double) minutes / 60.;
+	ss << hours;
+
+	return ss.str();
+}
+
 std::string print_time(const time_t time) {
 	std::string res;
 	res.resize(9);
@@ -160,19 +172,14 @@ int main(int argc, char **argv) {
 	const int break_large     = 45 * seconds_per_minute;
 	const int total_work_time = established - total_break_time;
 	if (total_break_time == 0) {
-		total_break_time = total_work_time < nine ? break_small : break_large;
+		total_break_time = (total_work_time - break_large) < nine ? break_small : break_large;
 	}
 	const int   remaining_time = total_work_time - todo - total_break_time;
 	const int   max_work_time  = start + ten + std::max(total_break_time, break_large) - now;
-	std::string text_rem;
-	if (total_work_time > todo) {
-		text_rem = "more";
-	} else {
-		text_rem = "remaining";
-	}
+	std::string text_rem       = (total_work_time > todo) ? "more" : "remaining";
 
-	std::cout << '[' << print_time(now) << "] start: " << print_time(start)
-	          << "; 7.8h: " << print_time(start + todo + break_small)
+	std::cout << '[' << print_time(now) << "] start: " << print_time(start) << "; "
+	          << print_duration_as_hours(todo) << "h: " << print_time(start + todo + break_small)
 	          << "; 9h: " << print_time(start + nine + break_large)
 	          << "; 10h: " << print_time(start + ten + break_large) << '\n';
 	std::cout << "           already done: " << print_duration(total_work_time - total_break_time)
