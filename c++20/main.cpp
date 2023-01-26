@@ -138,31 +138,34 @@ int main(int argc, char **argv) {
 	auto        now   = std::chrono::system_clock::now();
 	timepoint_t start = string_to_timepoint(raw_start);
 
-	duration_t current = now - start;
+	duration_t total_time = now - start;
 	duration_t todo =
 	    (raw_daily.empty()) ? (string_to_duration(raw_weekly) / 5) : string_to_duration(raw_daily);
 	duration_t nine             = std::chrono::hours(9);
 	duration_t ten              = std::chrono::hours(10);
 	auto       total_break_time = std::accumulate(breaks.begin(), breaks.end(), (duration_t) 0);
 
-	duration_t break_small     = std::chrono::minutes(30);
-	duration_t break_large     = std::chrono::minutes(45);
-	duration_t total_work_time = current - total_break_time;
+	duration_t break_small = std::chrono::minutes(30);
+	duration_t break_large = std::chrono::minutes(45);
+	duration_t work_time   = total_time - total_break_time;
 	if (total_break_time == duration_t::zero()) {
-		total_break_time = (total_work_time - break_large) < nine ? break_small : break_large;
+		total_break_time = (work_time - break_large) < nine ? break_small : break_large;
 		breaks.push_back(total_break_time);
 	}
-	duration_t  remaining_time = total_work_time - todo - total_break_time;
-	duration_t  max_work_time  = start + ten + std::max(total_break_time, break_large) - now;
-	std::string text_rem       = (total_work_time > todo) ? "more" : "remaining";
+	bool       done = work_time > todo;
+	duration_t remaining_time =
+	    done ? (work_time + total_break_time - todo) : (total_time - (todo + total_break_time));
+	duration_t  max_work_time = start + ten + std::max(total_break_time, break_large) - now;
+	std::string text_rem      = (work_time > todo) ? "more" : "remaining";
 
 	std::cout << '[' << print_time(now) << "] start: " << print_time(start) << "; "
-	          << print_duration_as_hours(todo) << "h: " << print_time(start + todo + break_small)
+	          << print_duration_as_hours(todo)
+	          << "h: " << print_time(start + todo + std::max(break_small, total_break_time))
 	          << "; 9h: " << print_time(start + nine + std::max(break_large, total_break_time))
 	          << "; 10h: " << print_time(start + ten + std::max(break_large, total_break_time))
 	          << '\n';
-	std::cout << "           already done: " << print_duration(total_work_time - total_break_time)
-	          << "; " << print_duration(remaining_time) << ' ' << text_rem
+	std::cout << "           already done: " << print_duration(work_time) << "; "
+	          << print_duration(remaining_time) << ' ' << text_rem
 	          << "; no longer than: " << print_duration(max_work_time) << '\n';
 	std::cout << "           total break time: " << print_duration(total_break_time)
 	          << "; longest break: "
