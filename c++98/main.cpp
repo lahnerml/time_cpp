@@ -1,4 +1,8 @@
+#ifdef __APPLE__
 #include <sys/event.h>
+#else
+#include <event.h>
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -118,7 +122,7 @@ int main(int argc, char **argv) {
 	std::vector<std::string> raw_breaks;
 	std::string              raw_start;
 	std::string              raw_daily;
-	std::string              raw_weekly;
+	std::string              raw_weekly = "39:00";
 
 	while ((option = getopt(argc, argv, "b:d:hs:w:")) != -1) {
 		switch (option) {
@@ -160,7 +164,7 @@ int main(int argc, char **argv) {
 	}
 
 	// Create time object for start of work
-	std::time_t now = std::time(nullptr);
+	std::time_t now = std::time(NULL);
 	std::tm    *start_tm;
 	start_tm          = std::localtime(&now);
 	start_tm->tm_hour = start_tmp.hour;

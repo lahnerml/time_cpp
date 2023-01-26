@@ -1,8 +1,13 @@
+#ifdef __APPLE__
 #include <sys/event.h>
+#else
+#include <event.h>
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -54,9 +59,15 @@ duration_t break_length(const std::string &input) {
 	return break_time;
 }
 
+/** abs is C++17 */
+template <typename T>
+T abs(T value) {
+	return value < T::zero() ? -1 * value : value;
+}
+
 /** Print duration as HH:MM */
 std::string print_duration(duration_t duration) {
-	duration = duration < duration_t::zero() ? -1 * duration : duration; // abs is C++17
+	duration = abs(duration);
 	auto h   = std::chrono::duration_cast<std::chrono::hours>(duration);
 	auto m   = std::chrono::duration_cast<std::chrono::minutes>(duration - h);
 
@@ -67,9 +78,9 @@ std::string print_duration(duration_t duration) {
 	return ss.str();
 }
 
-/** Print duration as hours floating-value */
+/** Print duration as floating-value of hours */
 std::string print_duration_as_hours(duration_t duration) {
-	duration = duration < duration_t::zero() ? -1 * duration : duration; // abs is C++17
+	duration = abs(duration);
 	auto h   = d_hour_t(duration);
 
 	std::stringstream ss;
@@ -78,7 +89,7 @@ std::string print_duration_as_hours(duration_t duration) {
 	return ss.str();
 }
 
-/** Print time as HH:MM */
+/** Print timepoint as HH:MM */
 std::string print_time(const timepoint_t time) {
 	std::string res;
 	res.resize(9);
@@ -95,7 +106,7 @@ int main(int argc, char **argv) {
 	std::vector<std::string> raw_breaks;
 	std::string              raw_start;
 	std::string              raw_daily;
-	std::string              raw_weekly;
+	std::string              raw_weekly = "39:00";
 	while ((option = getopt(argc, argv, "b:d:hs:w:")) != -1) {
 		switch (option) {
 		case 'b':

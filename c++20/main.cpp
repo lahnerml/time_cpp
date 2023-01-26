@@ -1,8 +1,13 @@
+#ifdef __APPLE__
 #include <sys/event.h>
+#else
+#include <event.h>
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -35,7 +40,7 @@ timepoint_t string_to_timepoint(const std::string &input) {
 	return res;
 }
 
-/** Convert string to duration; no more constants required */
+/** Convert string to durations.  No more constants required */
 duration_t string_to_duration(const std::string &input) {
 	duration_t h = std::chrono::hours(std::atoi(input.substr(0, 2).c_str()));
 	duration_t m = std::chrono::minutes(std::atoi(input.substr(input.find(':') + 1, 2).c_str()));
@@ -44,7 +49,7 @@ duration_t string_to_duration(const std::string &input) {
 	return res;
 }
 
-/** Calculate breaklength arithmetically */
+/** Calculate length of breaks.  Straight-forward arithmetic operations. */
 duration_t break_length(const std::string &input) {
 	const size_t pos_dash    = input.find('-');
 	auto         break_start = string_to_duration(input.substr(0, pos_dash));
@@ -54,12 +59,11 @@ duration_t break_length(const std::string &input) {
 	return break_time;
 }
 
-/** Print duration in format HH:MM */
+/** Print duration as HH:MM */
 std::string print_duration(duration_t duration) {
 	duration = abs(duration);
-
-	auto h = std::chrono::duration_cast<std::chrono::hours>(duration);
-	auto m = std::chrono::duration_cast<std::chrono::minutes>(duration - h);
+	auto h   = std::chrono::duration_cast<std::chrono::hours>(duration);
+	auto m   = std::chrono::duration_cast<std::chrono::minutes>(duration - h);
 
 	std::stringstream ss;
 	ss.fill('0');
@@ -68,7 +72,7 @@ std::string print_duration(duration_t duration) {
 	return ss.str();
 }
 
-/** Print duration as floating hours */
+/** Print duration as floating-value of hours */
 std::string print_duration_as_hours(duration_t duration) {
 	duration = abs(duration);
 	auto h   = d_hour_t(duration);
@@ -79,7 +83,7 @@ std::string print_duration_as_hours(duration_t duration) {
 	return ss.str();
 }
 
-/** Print timepoint in format HH:MM */
+/** Print timepoint as HH:MM */
 std::string print_time(const timepoint_t time) {
 	std::string res;
 	res.resize(9);
@@ -96,7 +100,7 @@ int main(int argc, char **argv) {
 	std::vector<std::string> raw_breaks;
 	std::string              raw_start;
 	std::string              raw_daily;
-	std::string              raw_weekly;
+	std::string              raw_weekly = "39:00";
 	while ((option = getopt(argc, argv, "b:d:hs:w:")) != -1) {
 		switch (option) {
 		case 'b':
@@ -119,7 +123,7 @@ int main(int argc, char **argv) {
 			return -1;
 		}
 	}
-	// verify all required options have been set
+	// Verify all required options have been set properly
 	if (raw_start.empty()) {
 		throw std::invalid_argument("Start time must be set");
 	}
