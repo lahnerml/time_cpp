@@ -158,14 +158,15 @@ int main(int argc, char **argv) {
 
 	std::cout << '[' << print_time(now) << "] start: " << print_time(start) << "; "
 	          << print_duration_as_hours(todo) << "h: " << print_time(start + todo + break_small)
-	          << "; 9h: " << print_time(start + nine + break_large)
-	          << "; 10h: " << print_time(start + ten + break_large) << '\n';
+	          << "; 9h: " << print_time(start + nine + std::max(break_large, total_break_time))
+	          << "; 10h: " << print_time(start + ten + std::max(break_large, total_break_time))
+	          << '\n';
 	std::cout << "           already done: " << print_duration(total_work_time - total_break_time)
 	          << "; " << print_duration(remaining_time) << ' ' << text_rem
 	          << "; no longer than: " << print_duration(max_work_time) << '\n';
 	std::cout << "           total break time: " << print_duration(total_break_time)
-	          << "; longest break: " << print_duration(*std::max_element(breaks.begin(), breaks.end()))
-			  <<'\n';
+	          << "; longest break: "
+	          << print_duration(*std::max_element(breaks.begin(), breaks.end())) << '\n';
 
 	return 0;
 }
