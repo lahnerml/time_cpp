@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
 	duration_t total_work_time = current - total_break_time;
 	if (total_break_time == duration_t::zero()) {
 		total_break_time = (total_work_time - break_large) < nine ? break_small : break_large;
+		breaks.push_back(total_break_time);
 	}
 	duration_t  remaining_time = total_work_time - todo - total_break_time;
 	duration_t  max_work_time  = start + ten + std::max(total_break_time, break_large) - now;
@@ -162,7 +163,9 @@ int main(int argc, char **argv) {
 	std::cout << "           already done: " << print_duration(total_work_time - total_break_time)
 	          << "; " << print_duration(remaining_time) << ' ' << text_rem
 	          << "; no longer than: " << print_duration(max_work_time) << '\n';
-	std::cout << "           total break time: " << print_duration(total_break_time) << '\n';
+	std::cout << "           total break time: " << print_duration(total_break_time)
+	          << "; longest break: " << print_duration(*std::max_element(breaks.begin(), breaks.end()))
+			  <<'\n';
 
 	return 0;
 }
